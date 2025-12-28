@@ -29,7 +29,7 @@ jobs:
 
     - name: Buil Docker Image
       run:  |
-        docker build anderortiz/docker-graphql:0.0.2 .
+        docker build -t anderortiz/docker-graphql:0.0.2 .
 
     - name: Push Docker Push
       run:  |
