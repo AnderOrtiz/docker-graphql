@@ -16,6 +16,14 @@ jobs:
       with:
         fetch-depth: 0
 
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+
     - name: Git Semantic Version
       uses: PaulHatch/semantic-version@v5.4.0
       id: semver
@@ -25,11 +33,14 @@ jobs:
         bump_each_commit_patch_pattern: "fix:"
         version_format: "${major}.${minor}.${patch}-prerelease${increment}"
 
+
     - name: Export version
       run: echo "NEW_VERSION=${{ steps.semver.outputs.version }}" >> $GITHUB_ENV
 
+
     - name: Show calculated version
       run: echo "Version = $NEW_VERSION"
+
 
     - name: Docker Login
       if: github.ref == 'refs/heads/master'
@@ -39,14 +50,28 @@ jobs:
       run: |
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
 
+
     - name: Build Docker Image
       run: |
         docker build \
           -t anderortiz/docker-graphql:$NEW_VERSION \
           -t anderortiz/docker-graphql:latest .
 
+
     - name: Push Docker Image
       if: github.ref == 'refs/heads/master'
       run: |
         docker push anderortiz/docker-graphql:$NEW_VERSION
         docker push anderortiz/docker-graphql:latest
+
+
+    - name: Build & Push Multi-Arch Image
+      uses: docker/build-push-action@v6
+      if: github.ref == 'refs/heads/master'
+      with:
+        context: .
+        push: true
+        platforms: linux/amd64,linux/arm64
+        tags: |
+          anderortiz/docker-graphql:$NEW_VERSION
+          anderortiz/docker-graphql:latest
