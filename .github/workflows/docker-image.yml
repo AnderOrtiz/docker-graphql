@@ -51,20 +51,6 @@ jobs:
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
 
 
-    - name: Build Docker Image
-      run: |
-        docker build \
-          -t anderortiz/docker-graphql:$NEW_VERSION \
-          -t anderortiz/docker-graphql:latest .
-
-
-    - name: Push Docker Image
-      if: github.ref == 'refs/heads/master'
-      run: |
-        docker push anderortiz/docker-graphql:$NEW_VERSION
-        docker push anderortiz/docker-graphql:latest
-
-
     - name: Build & Push Multi-Arch Image
       uses: docker/build-push-action@v6
       if: github.ref == 'refs/heads/master'
